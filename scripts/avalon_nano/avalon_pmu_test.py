@@ -52,36 +52,54 @@ def show_help():
 h: help\n\
 1: detect the pmu version\n\
 2: set	  the pmu output voltage\n\
-	  0100: close the voltage output\n\
-	  0000: 7.00V\n\
-	  0011: 7.14V\n\
-	  0022: 7.28V\n\
-	  0033: 7.42V\n\
-	  0044: 7.56V\n\
-	  0055: 7.70V\n\
-	  0066: 7.84V\n\
-	  0077: 7.98V\n\
-	  0088: 8.12V\n\
-	  0099: 8.26V\n\
-	  00AA: 8.40V\n\
-	  00BB: 8.54V\n\
-	  00CC: 8.68V\n\
-	  00DD: 8.82V\n\
-	  00EE: 8.96V\n\
-	  00FF: 9.10V\n\
-3: get	  the voltage and temperature\n\
-4: test	  the process of power on\n\
+	  0000: close the voltage output\n\
+	  8800: 7.00V\n\
+	  8811: 7.14V\n\
+	  8822: 7.28V\n\
+	  8833: 7.42V\n\
+	  8844: 7.56V\n\
+	  8855: 7.70V\n\
+	  8866: 7.84V\n\
+	  8877: 7.98V\n\
+	  8888: 8.12V\n\
+	  8899: 8.26V\n\
+	  88AA: 8.40V\n\
+	  88BB: 8.54V\n\
+	  88CC: 8.68V\n\
+	  88DD: 8.82V\n\
+	  88EE: 8.96V\n\
+	  88FF: 9.10V\n\
+3: set    the pmu led state\n\
+          0000: all   led off\n\
+          0101: green led on\n\
+          0202: red   led on\n\
+4: get    the pmu state\n\
+5: test	  the process of power on\n\
 q: quit\n")
 
 def judge_vol_range(vol):
 	if (len(vol) != 4):
 		return False
-	if ((vol[0:2] != "00") and (vol[0:2] != "01")):
+	if ((vol[0:2] != "00") and (vol[0:2] != "88")):
 		return False
 	try:
 		binascii.a2b_hex(vol[2:4])
 	except:
 		return False
+	return True
+
+def judge_led_range(led):
+	if (len(led) != 4):
+		return False
+	if ((led[0:1] != "0") and (led[2:3] != "0")):
+		return False
+
+	if ((led[1:2] != "0") and (led[1:2] != "1") and (led[1:2] != "2")):
+		return False
+
+	if ((led[3:4] != "0") and (led[3:4] != "1") and (led[3:4] != "2")):
+		return False
+
 	return True
 
 def detect_version():
@@ -100,7 +118,16 @@ def set_voltage(vol_value):
 	else:
 		print("Bad voltage vaule!")
 
-def get_voltage_tem():
+def set_led_state(led):
+	if (judge_led_range(led)):
+		input_str = mm_package("24", module_id = None, pdata = led);
+		ser.flushInput()
+		ser.write(input_str.decode('hex'))
+		time.sleep(1)
+	else:
+		print("Bad led's state vaule!")
+
+def get_pmu_state():
 	input_str = mm_package("30", module_id = None);
 	ser.flushInput()
 	ser.write(input_str.decode('hex'))
@@ -117,18 +144,33 @@ def get_voltage_tem():
 	a = int(binascii.hexlify(res[16:18]), 16)/1024.0 * 3.3 * 11
 	print("VCORE2: " + '%.2f' %a)
 	a = binascii.hexlify(res[18:19])
-	if (a == "00"):
-		print("PG1 Good")
-		print("PG2 Good")
 	if (a == "01"):
+		print("PG1 Good")
+	if (a == "02"):
 		print("PG1 Bad")
+	a = binascii.hexlify(res[19:20])
+	if (a == "01"):
 		print("PG2 Good")
 	if (a == "02"):
-		print("PG1 Good")
 		print("PG2 Bad")
+	a = binascii.hexlify(res[20:21])
+	if (a == "00"):
+		print("LED1: all led off")
+	if (a == "01"):
+		print("LED1: green led on")
+	if (a == "02"):
+		print("LED1: red led on")
 	if (a == "03"):
-		print("PG1 Bad")
-		print("PG2 Bad")
+		print("LED1: all led on")
+	a = binascii.hexlify(res[21:22])
+	if (a == "00"):
+		print("LED2: all led off")
+	if (a == "01"):
+		print("LED2: green led on")
+	if (a == "02"):
+		print("LED2: red led on")
+	if (a == "03"):
+		print("LED2: all led on")
 
 # TODO : finish this test_init_process fuction
 def test_init_process():
@@ -164,7 +206,7 @@ def test_init_process():
 
 def test_polling():
 	while (1):
-		h = raw_input("Please input(1-4), h for help:")
+		h = raw_input("Please input(1-5), h for help:")
 		if ((h == 'h') or (h == 'H')):
 			show_help()
 		elif ((h == 'q') or (h == 'Q')):
@@ -175,8 +217,11 @@ def test_polling():
 			vol = raw_input("Please input the voltage:")
 			set_voltage(vol)
 		elif (h == '3'):
-			get_voltage_tem()
+			led = raw_input("Please input the led state:")
+			set_led_state(led)
 		elif (h == '4'):
+                        get_pmu_state();
+		elif (h == '5'):
 			test_init_process()
 		else:
 			show_help()

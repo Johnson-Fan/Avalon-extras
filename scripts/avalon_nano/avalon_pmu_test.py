@@ -80,7 +80,7 @@ q: quit\n")
 def judge_vol_range(vol):
 	if (len(vol) != 4):
 		return False
-	if ((vol[0:2] != "00") and (vol[0:2] != "88")):
+	if ((vol[0:2] != "00") and (vol[0:2] != "88") and (vol[0:2] != "80") and (vol[0:2] != "08")):
 		return False
 	try:
 		binascii.a2b_hex(vol[2:4])
@@ -143,34 +143,51 @@ def get_pmu_state():
 	print("VCORE1: " + '%.2f' %a)
 	a = int(binascii.hexlify(res[16:18]), 16)/1024.0 * 3.3 * 11
 	print("VCORE2: " + '%.2f' %a)
-	a = binascii.hexlify(res[18:19])
-	if (a == "01"):
+	a = binascii.hexlify(res[18:20])
+	if (a == "0001"):
 		print("PG1 Good")
-	if (a == "02"):
+	if (a == "0002"):
 		print("PG1 Bad")
-	a = binascii.hexlify(res[19:20])
-	if (a == "01"):
+	a = binascii.hexlify(res[20:22])
+	if (a == "0001"):
 		print("PG2 Good")
-	if (a == "02"):
+	if (a == "0002"):
 		print("PG2 Bad")
-	a = binascii.hexlify(res[20:21])
-	if (a == "00"):
+	a = binascii.hexlify(res[22:24])
+	if (a == "0000"):
 		print("LED1: all led off")
-	if (a == "01"):
+	if (a == "0001"):
 		print("LED1: green led on")
-	if (a == "02"):
+	if (a == "0002"):
 		print("LED1: red led on")
-	if (a == "03"):
+	if (a == "0003"):
 		print("LED1: all led on")
-	a = binascii.hexlify(res[21:22])
-	if (a == "00"):
+	a = binascii.hexlify(res[24:26])
+	if (a == "0000"):
 		print("LED2: all led off")
-	if (a == "01"):
+	if (a == "0001"):
 		print("LED2: green led on")
-	if (a == "02"):
+	if (a == "0002"):
 		print("LED2: red led on")
-	if (a == "03"):
+	if (a == "0003"):
 		print("LED2: all led on")
+
+def get_pmu_state_vol():
+	input_str = mm_package("30", module_id = None);
+	ser.flushInput()
+	ser.write(input_str.decode('hex'))
+
+	res=ser.readall()
+	print("NTC1:   " + '%d' %int(binascii.hexlify(res[6:8]), 16))
+	print("NTC2:   " + '%d' %int(binascii.hexlify(res[8:10]), 16))
+	a = int(binascii.hexlify(res[10:12]), 16)/1024.0 * 3.3 * 11
+	print("V12-1:  " + '%.2f' %a)
+	a = int(binascii.hexlify(res[12:14]), 16)/1024.0 * 3.3 * 11
+	print("V12-2:  " + '%.2f' %a)
+	a = int(binascii.hexlify(res[14:16]), 16)/1024.0 * 3.3 * 11
+	print("VCORE1: " + '%.2f' %a)
+	a = int(binascii.hexlify(res[16:18]), 16)/1024.0 * 3.3 * 11
+	print("VCORE2: " + '%.2f' %a)
 
 # TODO : finish this test_init_process fuction
 def test_init_process():
@@ -231,7 +248,10 @@ if __name__ == '__main__':
 		if (options.is_rig == '1'):
 			detect_version()
 			set_voltage("00AA")
-			get_voltage_tem()
+			get_pmu_state()
 		elif (options.is_rig == '0'):
 			test_polling()
-		raw_input('Press Enter to continue')
+		elif (options.is_rig == '2'):
+			get_pmu_state_vol()
+                        time.sleep(1)
+#		raw_input('Press Enter to continue')

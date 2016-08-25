@@ -73,6 +73,8 @@ h: help\n\
           0000: all   led off\n\
           0101: green led on\n\
           0202: red   led on\n\
+          1010: green led blink\n\
+          2020: red   led blink\n\
 4: get    the pmu state\n\
 5: test	  the process of power on\n\
 q: quit\n")
@@ -92,12 +94,6 @@ def judge_led_range(led):
 	if (len(led) != 4):
 		return False
 	if ((led[0:1] != "0") and (led[2:3] != "0")):
-		return False
-
-	if ((led[1:2] != "0") and (led[1:2] != "1") and (led[1:2] != "2")):
-		return False
-
-	if ((led[3:4] != "0") and (led[3:4] != "1") and (led[3:4] != "2")):
 		return False
 
 	return True
@@ -135,7 +131,7 @@ def get_pmu_state():
 	res=ser.readall()
 	print("NTC1:   " + '%d' %int(binascii.hexlify(res[6:8]), 16))
 	print("NTC2:   " + '%d' %int(binascii.hexlify(res[8:10]), 16))
-	a = int(binascii.hexlify(res[10:12]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[10:12]), 16)/1024.0 * 3.3 * 11.0
 	print("V12-1:  " + '%.2f' %a)
 	a = int(binascii.hexlify(res[12:14]), 16)/1024.0 * 3.3 * 11
 	print("V12-2:  " + '%.2f' %a)
@@ -162,6 +158,10 @@ def get_pmu_state():
 		print("LED1: red led on")
 	if (a == "0003"):
 		print("LED1: all led on")
+	if (a == "0004"):
+		print("LED1: green led blink")
+	if (a == "0008"):
+		print("LED1: red led blink")
 	a = binascii.hexlify(res[24:26])
 	if (a == "0000"):
 		print("LED2: all led off")
@@ -171,6 +171,10 @@ def get_pmu_state():
 		print("LED2: red led on")
 	if (a == "0003"):
 		print("LED2: all led on")
+	if (a == "0004"):
+		print("LED2: green led blink")
+	if (a == "0008"):
+		print("LED2: red led blink")
 
 def get_pmu_state_vol():
 	input_str = mm_package("30", module_id = None);
@@ -247,7 +251,7 @@ if __name__ == '__main__':
 	while (1):
 		if (options.is_rig == '1'):
 			detect_version()
-			set_voltage("00AA")
+			set_voltage("88AA")
 			get_pmu_state()
 		elif (options.is_rig == '0'):
 			test_polling()

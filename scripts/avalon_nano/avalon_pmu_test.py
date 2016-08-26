@@ -100,6 +100,36 @@ def set_voltage(vol_value):
 	else:
 		print("Bad voltage vaule!")
 
+def judge_rig_range(vol):
+        if (len(vol) != 2):
+                return False;
+        if ((vol[0:2] != "00") and (vol[0:2] != "51") and (vol[0:2] != "52")):
+                return False;
+        try:
+                binascii.a2b_hex(vol[0:2])
+        except:
+                return False;
+        return True
+
+def pmu_rig_test(rig_value):
+	if (judge_rig_range(rig_value)):
+		ser.flushInput()
+		ser.write(rig_value.decode('hex'))
+		time.sleep(1)
+	        res=ser.readall()
+
+                a = binascii.hexlify(res[0:2])
+                if (a == "a0"):
+                    print("Pass \n")
+                elif (a == "a1"):
+                    print("Vcore failed\n")
+                elif (a == "a2"):
+                    print("V12 failed\n")
+                elif (a == "a3"):
+                    print("NTC failed\n")
+                elif (a == "a4"):
+                    print("Vref failed\n")
+
 def get_voltage_tem():
 	input_str = mm_package("30", module_id = None);
 	ser.flushInput()
@@ -189,4 +219,7 @@ if __name__ == '__main__':
 			get_voltage_tem()
 		elif (options.is_rig == '0'):
 			test_polling()
-		raw_input('Press Enter to continue')
+		        raw_input('Press Enter to continue')
+		elif (options.is_rig == '2'):
+			vol = raw_input("Please input the cmd:")
+                        pmu_rig_test(vol)

@@ -103,6 +103,7 @@ def detect_version():
 	ser.flushInput()
 	ser.write(input_str.decode('hex'))
 	res=ser.readall()
+        print("AVAM_DNA:" + binascii.hexlify(res[6:14]))
 	print("AVAM_VERSION: " + res[14:29])
 
 def set_voltage(vol_value):
@@ -131,25 +132,27 @@ def get_pmu_state():
 	res=ser.readall()
 	print("NTC1:   " + '%d' %int(binascii.hexlify(res[6:8]), 16))
 	print("NTC2:   " + '%d' %int(binascii.hexlify(res[8:10]), 16))
-	a = int(binascii.hexlify(res[10:12]), 16)/1024.0 * 3.3 * 11.0
+	a = int(binascii.hexlify(res[10:12]), 16)
 	print("V12-1:  " + '%.2f' %a)
-	a = int(binascii.hexlify(res[12:14]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[12:14]), 16)
 	print("V12-2:  " + '%.2f' %a)
-	a = int(binascii.hexlify(res[14:16]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[14:16]), 16)
 	print("VCORE1: " + '%.2f' %a)
-	a = int(binascii.hexlify(res[16:18]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[16:18]), 16)
 	print("VCORE2: " + '%.2f' %a)
-	a = binascii.hexlify(res[18:20])
+	a = int(binascii.hexlify(res[18:20]), 16)
+	print("VBASE:  " + '%.2f' %a)
+	a = binascii.hexlify(res[20:22])
 	if (a == "0001"):
 		print("PG1 Good")
 	if (a == "0002"):
 		print("PG1 Bad")
-	a = binascii.hexlify(res[20:22])
+	a = binascii.hexlify(res[22:24])
 	if (a == "0001"):
 		print("PG2 Good")
 	if (a == "0002"):
 		print("PG2 Bad")
-	a = binascii.hexlify(res[22:24])
+	a = binascii.hexlify(res[24:26])
 	if (a == "0000"):
 		print("LED1: all led off")
 	if (a == "0001"):
@@ -162,7 +165,7 @@ def get_pmu_state():
 		print("LED1: green led blink")
 	if (a == "0008"):
 		print("LED1: red led blink")
-	a = binascii.hexlify(res[24:26])
+	a = binascii.hexlify(res[26:28])
 	if (a == "0000"):
 		print("LED2: all led off")
 	if (a == "0001"):
@@ -184,14 +187,16 @@ def get_pmu_state_vol():
 	res=ser.readall()
 	print("NTC1:   " + '%d' %int(binascii.hexlify(res[6:8]), 16))
 	print("NTC2:   " + '%d' %int(binascii.hexlify(res[8:10]), 16))
-	a = int(binascii.hexlify(res[10:12]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[10:12]), 16)
 	print("V12-1:  " + '%.2f' %a)
-	a = int(binascii.hexlify(res[12:14]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[12:14]), 16)
 	print("V12-2:  " + '%.2f' %a)
-	a = int(binascii.hexlify(res[14:16]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[14:16]), 16)
 	print("VCORE1: " + '%.2f' %a)
-	a = int(binascii.hexlify(res[16:18]), 16)/1024.0 * 3.3 * 11
+	a = int(binascii.hexlify(res[16:18]), 16)
 	print("VCORE2: " + '%.2f' %a)
+	a = int(binascii.hexlify(res[18:20]), 16)
+	print("VBASE:  " + '%.2f' %a)
 
 # TODO : finish this test_init_process fuction
 def test_init_process():

@@ -528,7 +528,7 @@ void mboot(char *mcs_filepath)
 	printf("gmcs1_len = %d\n", gmcs1_len);
 
 	if ((mm_type[0] == 'M') && (mm_type[1] == 'M')) {
-		mm_send_upgrade_info(&mm_type[2], 3);
+		mm_send_upgrade_info(&mm_type[2], strlen(mm_type) - 2);
 		printf("mm type: %s\n", mm_type);
 	}
 
